@@ -1,5 +1,7 @@
 import pygame
 from Game.Level import Level
+from Game.objects.Ground import Ground
+from Game.objects.Underground import GroundUnder
 from Game.objects.Platform import Platform
 
 
@@ -11,25 +13,24 @@ backGround = pygame.image.load('assets/bg.jpg')
 
 # Класс, что описывает где будут находится все платформы
 # на определенном уровне игры
-class Level_01(Level):
+class Level_03(Level):
     def __init__(self, player):
         # Вызываем родительский конструктор
         Level.__init__(self, player, backGround)
 
         # Массив с данными про платформы. Данные в таком формате:
         # ширина, высота, x и y позиция
-        level = [
-            [200, 30, 500, 500],
-            [200, 30, 200, 400],
-            [180, 30, 640, 300],
-        ]
+        ground = [0, 500]
+        ground_under = [0, 500]
 
-        # Перебираем массив и добавляем каждую платформу в группу спрайтов - platform_list
-        for platform in level:
-            block = Platform(platform[0], platform[1])
-            block.rect.x = platform[2]
-            block.rect.y = platform[3]
-            block.player = self.player
-            self.platform_list.add(block)
+        block1 = GroundUnder()
+        block1.rect.x = ground_under[0]
+        block1.rect.y = ground_under[1]
+        block1.player = self.player
+        self.platform_list.add(block1)
 
-
+        block2 = Ground()
+        block2.rect.x = ground[0]
+        block2.rect.y = ground[1]
+        block2.player = self.player
+        self.platform_list.add(block2)

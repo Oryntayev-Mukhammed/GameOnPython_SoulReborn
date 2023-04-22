@@ -9,5 +9,11 @@ class Platform(pygame.sprite.Sprite):
         # Также указываем фото платформы
         self.image = pygame.image.load('assets/Plot01.png')
 
-        # Установите ссылку на изображение прямоугольника
+        # Делаем плотформе высоту и ширину картинки
         self.rect = self.image.get_rect()
+
+        self.image = pygame.transform.scale(self.image, (width, height))
+
+        # Меняем высоту и ширину
+        self.rect.h = height
+        self.rect.w = width

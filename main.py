@@ -9,7 +9,7 @@ from Game.active.GamePlay import GamePlay
 from Game.active.MainMenu import MainMenu
 from Game.levels.Level_01 import Level_01
 from Game.levels.Level_02 import Level_02
-from Game.Button import Button
+from Game.levels.Level_03 import Level_03
 
 # Переменные для установки ширины и высоты окна
 SCREEN_WIDTH = 800
@@ -29,20 +29,22 @@ def main():
     pygame.display.set_caption("Платформер")
 
     # Создаем игрока
-    player = Player(SCREEN_HEIGHT)
+    player = Player(SCREEN_HEIGHT, screen)
 
     # Создание уровня
     level_01 = Level_01(player)
     level_02 = Level_02(player)
+    level_03 = Level_03(player)
 
     # Создаем все уровни
     level_list = [
         level_01,
-        level_02
+        level_02,
+        level_03
     ]
 
     # Устанавливаем текущий уровень
-    current_level_no = 0
+    current_level_no = 2
     current_level = level_list[current_level_no]
 
     active_sprite_list = pygame.sprite.Group()
@@ -61,7 +63,6 @@ def main():
     game_play = GamePlay(active_sprite_list, level_list, current_level_no, player, screen,
                          SCREEN_WIDTH)
     game_over = GameOver(SCREEN_WIDTH, SCREEN_HEIGHT)
-
     game_state_machine = GameStateMachine(
         {"MainMenu": main_menu, "GamePlay": game_play, "GameOver": game_over},
         main_menu

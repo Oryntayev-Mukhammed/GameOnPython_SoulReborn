@@ -23,30 +23,41 @@ class GamePlay:
         # Какая карта действует на персонажа
         self.player.level = self.current_level
 
+        # Обновление полоски жизни
+        self.player.hud.update_health_bar()
+
+        # Смена типа анимации
+        self.player.set_animation()
+
+        self.player.update_animation()
         # Обновляем объекты на сцене
-        self.current_level.update()
+        # self.current_level.update()
+
 
         # Если игрок приблизится к правой стороне, то дальше его не двигаем или переходим на другой уровень
         if self.player.rect.right > self.SCREEN_WIDTH:
-            if self.current_level_no != len(self.level_list)-1:
+            if self.current_level_no != len(self.level_list)-1 and self.player.right:
                 self.current_level_no += 1
                 self.current_level = self.level_list[self.current_level_no]
-                self.load(self.current_level_no, 1, self.player.rect.y)
+                self.load(self.current_level_no, 5, self.player.rect.y)
             else:
                 self.player.rect.right = self.SCREEN_WIDTH
 
         # Если игрок приблизится к левой стороне, то дальше его не двигаем
-        if self.player.rect.left < 1:
-            if self.current_level_no != 0:
+        if self.player.rect.left < 0:
+            if self.current_level_no != 0 and not self.player.right:
                 self.current_level_no -= 1
                 self.current_level = self.level_list[self.current_level_no]
-                self.load(self.current_level_no, 745, self.player.rect.y)
-                print(self.player.rect.left)
+                self.load(self.current_level_no, 795, self.player.rect.y-1)
             else:
                 self.player.rect.left = 0
 
         if self.player.rect.bottom > 599:
-            game_state_machine.change_state("GameOver")
+            self.player.take_damage(10, game_state_machine)
+            # Оглушение (передаваемое число не имеет смысла)
+            self.player.stun(20)
+            # Возвращение в начало
+            self.pos()
 
         # Рисуем объекты на окне
         self.current_level.draw(self.screen)
@@ -54,17 +65,16 @@ class GamePlay:
         # Устанавливаем количество фреймов
         self.clock.tick(30)
 
-        # Обновляем экран после рисования объектов
-        pygame.display.flip()
-
     def handle_event(self, event, game_state_machine):
         if event.type == pygame.KEYDOWN and event.key == pygame.K_ESCAPE:
             # обработка нажатия клавиши ESC
             game_state_machine.change_state("MainMenu")
 
-    def pos(self):
+    # Возвращение в начало
+    def main_pos(self):
+        self.current_level_no = 0
         self.player.rect.x = 340
-        self.player.rect.y = 150
+        self.player.rect.y = 330
 
     def load(self, current_level_no, playerX, playerY):
         self.current_level_no = current_level_no
@@ -72,6 +82,13 @@ class GamePlay:
         self.player.rect.y = playerY
 
     def player_control(self, event):
+        # Проверка на передвижение
+        keys = pygame.key.get_pressed()
+        if keys[pygame.K_LEFT] or keys[pygame.K_RIGHT]:
+            self.player.is_moving = True
+        else:
+            self.player.is_moving = False
+
         # Если нажали на стрелки клавиатуры, то двигаем объект
         if event.type == pygame.KEYDOWN:
             if event.key == pygame.K_LEFT:
