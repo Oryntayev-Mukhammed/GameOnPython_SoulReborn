@@ -8,19 +8,29 @@ from Game.child.Hud import Hud
 class Player(pygame.sprite.Sprite):
     # Изначально игрок смотрит вправо, поэтому эта переменная True
     right = True
+    teg_move = True
     is_moving = False
 
     # Методы
     def __init__(self, SCREEN_HEIGHT, screen):
+        self.get_hurt = False
+        self.is_fly = False
         self.max_health = 40
         self.current_health = 40
         self.health_bar_length = 100
+        self.max_plasma = 20
+        self.current_plasma = 20
+        self.plasma_bar_length = 80
         self.hud_list = pygame.sprite.Group()
         self.SCREEN_HEIGHT = SCREEN_HEIGHT
         self.screen = screen
-        self.hud = Hud(screen, self.max_health, self.current_health, self.health_bar_length)
+        self.hud = Hud(screen,
+                       self.max_health, self.current_health, self.health_bar_length,
+                       self.max_plasma, self.current_plasma, self.plasma_bar_length)
         self.stunned = False  # Флаг, указывающий на то, оглушен ли игрок
         self.stun_time = 0  # Время оглушения (в кадрах)
+        self.fly_speed = 0.1
+        self.fly_max_speed = 0.1
 
         # Стандартный конструктор класса
         # Нужно ещё вызывать конструктор родительского класса
@@ -28,11 +38,17 @@ class Player(pygame.sprite.Sprite):
 
         # Тут хранятся анимации
         self.animations = {'idle': {'left': [], 'right': []},
+                           'moving_moment': {'left': [], 'right': []},
                            'moving': {'left': [], 'right': []},
                            'hurt': {'left': [], 'right': []}
                            }
         # Ложим в словарь картинки для анимации в папках
-        for i in range(1, 2):
+        for i in range(1, 7):
+            image = pygame.image.load(f'assets/moving_moment/Char0{i}.png').convert_alpha()
+            self.animations['moving_moment']['right'].append(image)
+            self.animations['moving_moment']['left'].append(pygame.transform.flip(image, True, False))
+
+        for i in range(1, 19):
             image = pygame.image.load(f'assets/moving/Char0{i}.png').convert_alpha()
             self.animations['moving']['right'].append(image)
             self.animations['moving']['left'].append(pygame.transform.flip(image, True, False))
@@ -64,7 +80,7 @@ class Player(pygame.sprite.Sprite):
         self.change_y = 0
 
     def set_animation(self):
-        if self.stunned:
+        if self.stunned or self.get_hurt:
             # Если текущая анимация изменилась тогда кадр анимации 0
             if self.current_animation != self.animations['hurt']:
                 self.current_frame = 0
@@ -75,6 +91,19 @@ class Player(pygame.sprite.Sprite):
                 self.image = self.current_animation['right'][self.current_frame]
             else:
                 self.image = self.current_animation['left'][self.current_frame]
+            self.get_hurt = False
+        elif self.teg_move and self.is_moving:
+            # Если текущая анимация изменилась тогда кадр анимации 0
+            if self.current_animation != self.animations['moving_moment']:
+                self.current_frame = 0
+            # Назначение текущей анимаций
+            self.current_animation = self.animations['moving_moment']
+            # Получение картинки в соответсвии с направлением игрока
+            if self.right:
+                self.image = self.current_animation['right'][self.current_frame]
+            else:
+                self.image = self.current_animation['left'][self.current_frame]
+            self.teg_move = False
         elif self.is_moving:
             # Если текущая анимация изменилась тогда кадр анимации 0
             if self.current_animation != self.animations['moving']:
@@ -152,6 +181,8 @@ class Player(pygame.sprite.Sprite):
                 elif self.change_y < 0:
                     self.rect.top = block.rect.bottom
 
+                # Когда на земле восстанавливает плазму
+                self.get_plasma(0.5)
                 # Останавливаем вертикальное движение
                 self.change_y = 0
         else:
@@ -161,10 +192,15 @@ class Player(pygame.sprite.Sprite):
     def calc_grav(self):
         # Здесь мы вычисляем как быстро объект будет
         # падать на землю под действием гравитации
-        if self.change_y == 0:
+        if self.is_fly:
+            if self.change_y < -4:
+                self.change_y = -4
+            else:
+                self.change_y -= self.fly_speed
+        elif self.change_y == 0:
             self.change_y = 1
         else:
-            self.change_y += .95
+            self.change_y += 0.95
 
         # Если уже на земле, то ставим позицию Y как 0
         if self.rect.y >= self.SCREEN_HEIGHT - self.rect.height and self.change_y >= 0:
@@ -184,35 +220,67 @@ class Player(pygame.sprite.Sprite):
         if len(platform_hit_list) > 0 or self.rect.bottom >= self.SCREEN_HEIGHT:
             self.change_y = -16
 
-    def take_damage(self, damage, game_state_machine):
+    def fly(self, fly_speed):
+        # Обработка прыжка
+        # Нам нужно проверять здесь, контактируем ли мы с чем-либо
+        # или другими словами, не находимся ли мы в полете.
+        # Для этого опускаемся на 10 единиц, проверем соприкосновение и далее поднимаемся обратно
+        self.is_fly = True
+        self.fly_speed = fly_speed
+
+    def take_damage(self, damage):
         # Уменьшение здаровья
         self.hud.current_health -= damage
+        # Обновление полоски жизни
+        self.hud.update_health_bar()
+        self.get_hurt = True
+
+    def die_check(self, game_state_machine):
         # Проверка на смерть
         if self.hud.current_health <= 0:
             # Запуск экрана поражение
             game_state_machine.change_state("GameOver")
             # Восстановление здаровья
-            self.reset_health()
+            self.reset_all()
             # Обновление полоски жизни
             self.hud.update_health_bar()
+
+    def reduce_plasma(self, plasma):
+        # Уменьшение здаровья
+        self.hud.current_plasma -= plasma
         # Обновление полоски жизни
-        self.hud.update_health_bar()
+        self.hud.update_plasma_bar()
+
+    def get_plasma(self, plasma):
+        if self.hud.max_plasma != self.hud.current_plasma:
+            self.hud.current_plasma += plasma
+        if self.hud.current_plasma > self.hud.max_plasma:
+            self.hud.current_plasma = self.hud.max_plasma
+        # Обновление полоски жизни
+        self.hud.update_plasma_bar()
 
     # Восстановление здаровья
-    def reset_health(self):
-        self.hud.current_health = 40
+    def reset_all(self):
+        self.hud.current_health = self.hud.max_health
+        self.hud.current_plasma = self.hud.max_plasma
 
     # Передвижение игрока
     def go_left(self):
         # Сами функции будут вызваны позже из основного цикла
-        self.change_x = -9  # Двигаем игрока по Х
+        if self.is_fly:
+            self.change_x = -5
+        else:
+            self.change_x = -9  # Двигаем игрока по Х
         if (self.right):  # Проверяем куда он смотрит и если что, то переворачиваем его
             self.flip()
             self.right = False
 
     def go_right(self):
         # то же самое, но вправо
-        self.change_x = 9
+        if self.is_fly:
+            self.change_x = 5
+        else:
+            self.change_x = 9
         if (not self.right):
             self.flip()
             self.right = True

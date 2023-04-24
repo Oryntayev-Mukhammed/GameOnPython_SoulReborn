@@ -10,6 +10,7 @@ from Game.active.MainMenu import MainMenu
 from Game.levels.Level_01 import Level_01
 from Game.levels.Level_02 import Level_02
 from Game.levels.Level_03 import Level_03
+from Game.levels.Level_04 import Level_04
 
 # Переменные для установки ширины и высоты окна
 SCREEN_WIDTH = 800
@@ -35,16 +36,18 @@ def main():
     level_01 = Level_01(player)
     level_02 = Level_02(player)
     level_03 = Level_03(player)
+    level_04 = Level_04(player)
 
     # Создаем все уровни
     level_list = [
         level_01,
         level_02,
-        level_03
+        level_03,
+        level_04
     ]
 
     # Устанавливаем текущий уровень
-    current_level_no = 2
+    current_level_no = 3
     current_level = level_list[current_level_no]
 
     active_sprite_list = pygame.sprite.Group()

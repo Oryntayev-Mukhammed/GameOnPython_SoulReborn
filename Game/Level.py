@@ -7,6 +7,7 @@ class Level(object):
         self.backGround = backGround
         # Создаем группу спрайтов (поместим платформы различные сюда)
         self.platform_list = pygame.sprite.Group()
+        self.enemy_list = pygame.sprite.Group()
         # Ссылка на основного игрока
         self.player = player
 
@@ -14,12 +15,14 @@ class Level(object):
     # При вызове этого метода обновление будет происходить
     def update(self):
         self.platform_list.update()
+        self.enemy_list.update()
 
     # Метод для рисования объектов на сцене
     def draw(self, screen):
         # Рисуем задний фон
         screen.blit(self.backGround, (0, 0))
 
-        # Рисуем все платформы из группы спрайтов
+        # Рисуем все из группы спрайтов
         self.platform_list.draw(screen)
+        self.enemy_list.draw(screen)
 

@@ -14,8 +14,12 @@ class GamePlay:
         self.state = False
 
     def update(self, game_state_machine):
+
         # Обновляем игрока
         self.active_sprite_list.update()
+
+        # Проверка умер ли игрок
+        self.player.die_check(game_state_machine)
 
         # Обновляем карту
         self.current_level = self.level_list[self.current_level_no]
@@ -23,20 +27,17 @@ class GamePlay:
         # Какая карта действует на персонажа
         self.player.level = self.current_level
 
-        # Обновление полоски жизни
-        self.player.hud.update_health_bar()
-
         # Смена типа анимации
         self.player.set_animation()
 
         self.player.update_animation()
-        # Обновляем объекты на сцене
-        # self.current_level.update()
 
+        # Обновляем объекты на сцене
+        self.current_level.update()
 
         # Если игрок приблизится к правой стороне, то дальше его не двигаем или переходим на другой уровень
         if self.player.rect.right > self.SCREEN_WIDTH:
-            if self.current_level_no != len(self.level_list)-1 and self.player.right:
+            if self.current_level_no != len(self.level_list) - 1 and self.player.right:
                 self.current_level_no += 1
                 self.current_level = self.level_list[self.current_level_no]
                 self.load(self.current_level_no, 5, self.player.rect.y)
@@ -48,20 +49,22 @@ class GamePlay:
             if self.current_level_no != 0 and not self.player.right:
                 self.current_level_no -= 1
                 self.current_level = self.level_list[self.current_level_no]
-                self.load(self.current_level_no, 795, self.player.rect.y-1)
+                self.load(self.current_level_no, 795, self.player.rect.y - 1)
             else:
                 self.player.rect.left = 0
 
         if self.player.rect.bottom > 599:
-            self.player.take_damage(10, game_state_machine)
+            self.player.take_damage(9, game_state_machine)
             # Оглушение (передаваемое число не имеет смысла)
             self.player.stun(20)
             # Возвращение в начало
-            self.pos()
+            self.main_pos()
 
-        # Рисуем объекты на окне
+        # Рисуем объекты на окне ОЧЕНЬ ВАЖНО ПИСАТЬ СЮДА ВСЕ DRAW и ЛЮБЫЕ ОБЬЕКТЫ
         self.current_level.draw(self.screen)
         self.active_sprite_list.draw(self.screen)
+        # Добавил сюда обновление полоски жизни и он перестал моргать
+        self.player.hud.update_hud()
         # Устанавливаем количество фреймов
         self.clock.tick(30)
 
@@ -88,6 +91,20 @@ class GamePlay:
             self.player.is_moving = True
         else:
             self.player.is_moving = False
+            self.player.teg_move = True
+
+        if keys[pygame.K_SPACE] and self.player.hud.current_plasma > 0 and not self.player.is_fly:
+            self.player.fly(0.05)
+            self.player.reduce_plasma(0.8)
+            if self.player.change_y < 0:
+                self.player.change_y = self.player.fly_max_speed
+            else:
+                self.player.change_y = self.player.change_y / 2
+        elif keys[pygame.K_SPACE] and self.player.hud.current_plasma > 0 and self.player.is_fly:
+            self.player.fly(0.05)
+            self.player.reduce_plasma(0.2)
+        elif self.player.is_fly:
+            self.player.is_fly = False
 
         # Если нажали на стрелки клавиатуры, то двигаем объект
         if event.type == pygame.KEYDOWN:
@@ -106,4 +123,3 @@ class GamePlay:
 
     def edit(self):
         self.state = not self.state
-
