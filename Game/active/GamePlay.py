@@ -1,4 +1,7 @@
 import pygame
+from pygame.locals import *
+
+from assets.entity.Sword import Sword
 
 
 class GamePlay:
@@ -12,11 +15,13 @@ class GamePlay:
         self.SCREEN_WIDTH = SCREEN_WIDTH
         self.clock = pygame.time.Clock()
         self.state = False
+        self.key_state = pygame.key.get_pressed()
+        self.key_press = False
 
     def update(self, game_state_machine):
-
         # Обновляем игрока
         self.active_sprite_list.update()
+        self.player.entity_sprite_list.update()
 
         # Проверка умер ли игрок
         self.player.die_check(game_state_machine)
@@ -54,7 +59,7 @@ class GamePlay:
                 self.player.rect.left = 0
 
         if self.player.rect.bottom > 599:
-            self.player.take_damage(9, game_state_machine)
+            self.player.take_damage(9)
             # Оглушение (передаваемое число не имеет смысла)
             self.player.stun(20)
             # Возвращение в начало
@@ -63,6 +68,7 @@ class GamePlay:
         # Рисуем объекты на окне ОЧЕНЬ ВАЖНО ПИСАТЬ СЮДА ВСЕ DRAW и ЛЮБЫЕ ОБЬЕКТЫ
         self.current_level.draw(self.screen)
         self.active_sprite_list.draw(self.screen)
+        self.player.entity_sprite_list.draw(self.screen)
         # Добавил сюда обновление полоски жизни и он перестал моргать
         self.player.hud.update_hud()
         # Устанавливаем количество фреймов
@@ -91,7 +97,7 @@ class GamePlay:
             self.player.is_moving = True
         else:
             self.player.is_moving = False
-            self.player.teg_move = True
+            self.player.moment_move = True
 
         if keys[pygame.K_SPACE] and self.player.hud.current_plasma > 0 and not self.player.is_fly:
             self.player.fly(0.05)
@@ -106,6 +112,15 @@ class GamePlay:
         elif self.player.is_fly:
             self.player.is_fly = False
 
+        current_key_state = pygame.key.get_pressed()
+        # Проверка наличия нажатия клавиши
+        if current_key_state[K_a] and not self.key_state[K_SPACE]:
+            self.key_press = True
+        else:
+            self.key_press = False
+        if self.key_press:
+            self.player.sword.is_attack = True
+            self.player.sword.attack()
         # Если нажали на стрелки клавиатуры, то двигаем объект
         if event.type == pygame.KEYDOWN:
             if event.key == pygame.K_LEFT:
@@ -114,6 +129,7 @@ class GamePlay:
                 self.player.go_right()
             if event.key == pygame.K_UP:
                 self.player.jump()
+
 
         if event.type == pygame.KEYUP:
             if event.key == pygame.K_LEFT and self.player.change_x < 0:

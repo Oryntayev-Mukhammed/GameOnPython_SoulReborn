@@ -6,7 +6,7 @@ class Enemy(pygame.sprite.Sprite):
     teg_move = True
     is_moving = False
 
-    def __init__(self, x, y, SCREEN_HEIGHT, max_health, platform_list):
+    def __init__(self, x, y, SCREEN_WIDTH, SCREEN_HEIGHT, max_health, platform_list):
         super().__init__()
         self.platform_list = platform_list
         self.image = pygame.Surface((50, 40))  # установим базовое изображение в виде поверхности 50х50 пикселей
@@ -15,9 +15,12 @@ class Enemy(pygame.sprite.Sprite):
         self.rect.y = y
         self.max_health = max_health
         self.current_health = max_health
+        self.SCREEN_WIDTH = SCREEN_WIDTH
         self.SCREEN_HEIGHT = SCREEN_HEIGHT
         self.stunned = False  # Флаг, указывающий на то, оглушен ли игрок
         self.stun_time = 0  # Время оглушения (в кадрах)
+        self.on_earth = True
+        self.wait = True
 
         # self.current_frame = 0
         # # Стандартная анимация (заглушка)
@@ -42,6 +45,10 @@ class Enemy(pygame.sprite.Sprite):
             # change_x будет меняться позже при нажатии на стрелочки клавиатуры
             self.rect.x += self.change_x
 
+            if self.rect.right > self.SCREEN_WIDTH:
+                self.rect.right = self.SCREEN_WIDTH
+            elif self.rect.left < 0:
+                self.rect.left = 0
             # Следим ударяем ли мы какой-то другой объект, платформы, например
             block_hit_list = pygame.sprite.spritecollide(self, self.platform_list, False)
             # Перебираем все возможные объекты, с которыми могли бы столкнуться
@@ -71,6 +78,11 @@ class Enemy(pygame.sprite.Sprite):
         else:
             if pygame.time.get_ticks() - self.stun_time > 2000:
                 self.stunned = False
+
+    def get_damage(self, damage):
+        self.current_health -= damage
+        if self.current_health <= 0:
+            self.kill()
 
     def calc_grav(self):
         # Здесь мы вычисляем как быстро объект будет

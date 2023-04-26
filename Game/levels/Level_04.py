@@ -24,19 +24,42 @@ class Level_04(Level):
         ground = [0, 500]
         ground_under = [0, 500]
 
-        block1 = GroundUnder()
-        block1.rect.x = ground_under[0]
-        block1.rect.y = ground_under[1]
-        block1.player = self.player
-        self.platform_list.add(block1)
+        block = GroundUnder()
+        block.rect.x = ground_under[0]
+        block.rect.y = ground_under[1]
+        block.player = self.player
+        self.platform_list.add(block)
 
-        block2 = Ground()
-        block2.rect.x = ground[0]
-        block2.rect.y = ground[1]
-        block2.player = self.player
-        self.platform_list.add(block2)
+        block = Ground()
+        block.rect.x = ground[0]
+        block.rect.y = ground[1]
+        block.player = self.player
+        self.platform_list.add(block)
+
+        block = Platform(200, 30)
+        block.rect.x = 25
+        block.rect.y = 300
+        self.platform_list.add(block)
+
+        block = Platform(200, 30)
+        block.rect.x = 600
+        block.rect.y = 280
+        self.platform_list.add(block)
+
+        block = Platform(200, 30)
+        block.rect.x = 550
+        block.rect.y = 400
+        self.platform_list.add(block)
+
+        block = Platform(200, 30)
+        block.rect.x = 550
+        block.rect.y = 400
+        self.platform_list.add(block)
 
         # Враг слизень
-        slime1 = Slime(300, 300, 800, 40, self.platform_list, self.player)
+        slime1 = Slime(0, 300, 800, 500, 40, self.platform_list, self.player)
+        slime2 = Slime(120, 300, 800, 500, 40, self.platform_list, self.player)
+        slime3 = Slime(340, 300, 800, 500, 40, self.platform_list, self.player)
+        slime4 = Slime(560, 300, 800, 500, 40, self.platform_list, self.player)
 
-        self.enemy_list.add(slime1)
+        self.enemy_list.add(slime1, slime2, slime3, slime4)
