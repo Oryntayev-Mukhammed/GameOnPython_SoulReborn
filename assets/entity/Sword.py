@@ -68,6 +68,7 @@ class Sword(pygame.sprite.Sprite):
                 distance = (dx ** 2 + dy ** 2) ** 0.5
                 if distance < 70:
                     enemy.get_damage(20)
+                    enemy.stun(2000)
             self.start_time = pygame.time.get_ticks()
 
     def set_animation(self):

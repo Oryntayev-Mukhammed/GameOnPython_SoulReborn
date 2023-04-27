@@ -101,11 +101,9 @@ class Slime(Enemy):
             self.current_animation = self.animations['hurt']
             # Получение картинки в соответсвии с направлением игрока
             if self.player.right:
-                self.image = self.current_animation['right'][self.current_frame]
-            else:
                 self.image = self.current_animation['left'][self.current_frame]
-            if self.current_frame == 9:
-                self.is_attack = False
+            elif not self.player.right:
+                self.image = self.current_animation['right'][self.current_frame]
         else:
             # Если текущая анимация изменилась тогда кадр анимации 0
             if self.current_animation != self.animations['idle']:
@@ -125,10 +123,10 @@ class Slime(Enemy):
         if self.current_frame >= len(self.current_animation['right']):
             self.current_frame = 0
         # Получение картинки в соответсвии с направлением удара игрока
-        if self.current_animation == ['hurt']:
+        if self.current_animation == self.animations['hurt']:
             if self.player.right:
                 self.image = self.current_animation['right'][self.current_frame]
-            else:
+            elif not self.player.right:
                 self.image = self.current_animation['left'][self.current_frame]
         else:
             if self.right:
@@ -144,7 +142,6 @@ class Slime(Enemy):
         else:
             self.change_x -= 10
         self.change_y -= 7
-        self.stun(2000)
 
 
     def jump(self):
