@@ -119,7 +119,6 @@ class GamePlay:
         else:
             self.key_press = False
         if self.key_press:
-            self.player.sword.is_attack = True
             self.player.sword.attack()
         # Если нажали на стрелки клавиатуры, то двигаем объект
         if event.type == pygame.KEYDOWN:
