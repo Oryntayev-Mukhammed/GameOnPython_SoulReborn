@@ -38,6 +38,7 @@ class Player(pygame.sprite.Sprite):
         self.fly_max_speed = 0.1
         self.sword = Sword(player=self, screen=self.screen)
         self.entity_sprite_list = pygame.sprite.Group(self.sword)
+        self.start_time = 0
 
         # Стандартный конструктор класса
         # Нужно ещё вызывать конструктор родительского класса
@@ -77,7 +78,7 @@ class Player(pygame.sprite.Sprite):
             self.animations['idle']['right'].append(image)
             self.animations['idle']['left'].append(pygame.transform.flip(image, True, False))
         # Ложим в словарь картинки для анимации в папках
-        for i in range(1, 2):
+        for i in range(1, 13):
             image = pygame.image.load(f'assets/get_hurt/hurt0{i}.png').convert_alpha()
             self.animations['hurt']['right'].append(image)
             self.animations['hurt']['left'].append(pygame.transform.flip(image, True, False))
@@ -99,7 +100,7 @@ class Player(pygame.sprite.Sprite):
         self.change_y = 0
 
     def set_animation(self):
-        if self.stunned or self.get_hurt:
+        if self.get_hurt:
             # Если текущая анимация изменилась тогда кадр анимации 0
             if self.current_animation != self.animations['hurt']:
                 self.current_frame = 0
@@ -110,7 +111,8 @@ class Player(pygame.sprite.Sprite):
                 self.image = self.current_animation['right'][self.current_frame]
             else:
                 self.image = self.current_animation['left'][self.current_frame]
-            self.get_hurt = False
+            if self.current_frame == 11:
+                self.get_hurt = False
         elif self.is_fly:
             # Если текущая анимация изменилась тогда кадр анимации 0
             if self.current_animation != self.animations['fly']:
@@ -187,53 +189,58 @@ class Player(pygame.sprite.Sprite):
     def stun(self, duration):
         # Оглушение игрока на указанное время
         self.stunned = True
+        self.is_moving = False
         self.stun_time = pygame.time.get_ticks()
+        self.stop()
         # Анимация аглушения
         self.set_animation()
         self.update_animation()
 
     def update(self):
-        if not self.stunned:
-            # В этой функции мы передвигаем игрока
-            # Сперва устанавливаем для него гравитацию
-            self.calc_grav()
+        # Время оглушения
+        if pygame.time.get_ticks() - self.stun_time > 1000:
+            self.stunned = False
 
-            # Передвигаем его на право/лево
-            # change_x будет меняться позже при нажатии на стрелочки клавиатуры
-            self.rect.x += self.change_x
+        # В этой функции мы передвигаем игрока
+        # Сперва устанавливаем для него гравитацию
+        self.calc_grav()
 
-            # Следим ударяем ли мы какой-то другой объект, платформы, например
-            block_hit_list = pygame.sprite.spritecollide(self, self.level.platform_list, False)
-            # Перебираем все возможные объекты, с которыми могли бы столкнуться
-            for block in block_hit_list:
-                # Если мы идем направо,
-                # устанавливает нашу правую сторону на левой стороне предмета, которого мы ударили
-                if self.change_x > 0:
-                    self.rect.right = block.rect.left
-                elif self.change_x < 0:
-                    # В противном случае, если мы движемся влево, то делаем наоборот
-                    self.rect.left = block.rect.right
+        # Передвигаем его на право/лево
+        # change_x будет меняться позже при нажатии на стрелочки клавиатуры
+        self.rect.x += self.change_x
 
-            # Передвигаемся вверх/вниз
-            self.rect.y += self.change_y
+        # Следим ударяем ли мы какой-то другой объект, платформы, например
+        block_hit_list = pygame.sprite.spritecollide(self, self.level.platform_list, False)
+        # Перебираем все возможные объекты, с которыми могли бы столкнуться
+        for block in block_hit_list:
+            # Если мы идем направо,
+            # устанавливает нашу правую сторону на левой стороне предмета, которого мы ударили
+            if self.change_x > 0:
+                self.rect.right = block.rect.left
+            elif self.change_x < 0:
+                # В противном случае, если мы движемся влево, то делаем наоборот
+                self.rect.left = block.rect.right
 
-            # То же самое, вот только уже для вверх/вниз
-            block_hit_list = pygame.sprite.spritecollide(self, self.level.platform_list, False)
-            for block in block_hit_list:
-                # Устанавливаем нашу позицию на основе верхней / нижней части объекта, на который мы попали
-                if self.change_y > 0:
-                    self.rect.bottom = block.rect.top
-                elif self.change_y < 0:
-                    self.rect.top = block.rect.bottom
+        # Передвигаемся вверх/вниз
+        self.rect.y += self.change_y
 
-                # Когда на земле восстанавливает плазму
-                self.get_plasma(0.5)
-                self.jump_moment = False
-                # Останавливаем вертикальное движение
-                self.change_y = 0
-        else:
-            if pygame.time.get_ticks() - self.stun_time > 2000:
-                self.stunned = False
+        # То же самое, вот только уже для вверх/вниз
+        block_hit_list = pygame.sprite.spritecollide(self, self.level.platform_list, False)
+        for block in block_hit_list:
+            # Устанавливаем нашу позицию на основе верхней / нижней части объекта, на который мы попали
+            if self.change_y > 0:
+                self.rect.bottom = block.rect.top
+                if self.stunned:
+                    self.change_x = 0
+            elif self.change_y < 0:
+                self.rect.top = block.rect.bottom
+
+            # Когда на земле восстанавливает плазму
+            self.get_plasma(0.5)
+            self.jump_moment = False
+            # Останавливаем вертикальное движение
+            self.change_y = 0
+
 
     def calc_grav(self):
         # Здесь мы вычисляем как быстро объект будет
@@ -275,12 +282,22 @@ class Player(pygame.sprite.Sprite):
         self.is_fly = True
         self.fly_speed = fly_speed
 
-    def take_damage(self, damage):
-        # Уменьшение здаровья
-        self.hud.current_health -= damage
-        # Обновление полоски жизни
-        self.hud.update_health_bar()
-        self.get_hurt = True
+    def take_damage(self, damage, y, x):
+        # Назначаем время не уязвимости
+        now = pygame.time.get_ticks()
+        # Неуязвимость 2 сек
+        if now - self.start_time > 2000:
+            self.stun(1)
+            # Откидывание от удара
+            self.change_y = 0
+            self.change_y -= y
+            self.change_x += x
+            # Уменьшение здаровья
+            self.hud.current_health -= damage
+            # Обновление полоски жизни
+            self.hud.update_health_bar()
+            self.start_time = pygame.time.get_ticks()
+            self.get_hurt = True
 
     def die_check(self, game_state_machine):
         # Проверка на смерть

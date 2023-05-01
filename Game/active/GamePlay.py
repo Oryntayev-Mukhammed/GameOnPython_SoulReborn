@@ -91,6 +91,9 @@ class GamePlay:
         self.player.rect.y = playerY
 
     def player_control(self, event):
+        # Если он застанен тогда останавливаем движение по x и не даем управление
+        if self.player.stunned:
+            return None
         # Проверка на передвижение
         keys = pygame.key.get_pressed()
         if keys[pygame.K_LEFT] or keys[pygame.K_RIGHT]:
@@ -121,20 +124,23 @@ class GamePlay:
         if self.key_press:
             self.player.sword.attack()
         # Если нажали на стрелки клавиатуры, то двигаем объект
-        if event.type == pygame.KEYDOWN:
-            if event.key == pygame.K_LEFT:
+        if keys[pygame.K_LEFT] and keys[pygame.K_RIGHT]:
+            self.player.stop()
+            self.player.is_moving = False
+        else:
+            if keys[pygame.K_LEFT]:
+                self.player.stop()
                 self.player.go_left()
-            if event.key == pygame.K_RIGHT:
+            if keys[pygame.K_RIGHT]:
+                self.player.stop()
                 self.player.go_right()
-            if event.key == pygame.K_UP:
-                self.player.jump()
+        if keys[pygame.K_UP]:
+            self.player.jump()
 
-
-        if event.type == pygame.KEYUP:
-            if event.key == pygame.K_LEFT and self.player.change_x < 0:
-                self.player.stop()
-            if event.key == pygame.K_RIGHT and self.player.change_x > 0:
-                self.player.stop()
+        if not keys[pygame.K_LEFT] and self.player.change_x < 0 and not self.player.stunned:
+            self.player.stop()
+        if not keys[pygame.K_RIGHT] and self.player.change_x > 0 and not self.player.stunned:
+            self.player.stop()
 
     def edit(self):
         self.state = not self.state

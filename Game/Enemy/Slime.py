@@ -22,10 +22,12 @@ class Slime(Enemy):
         self.current_time = 1
         self.wait_time = random.randint(20, 500)
         self.start_time = 0
+        self.is_jump = False
 
         # Тут хранятся анимации
         self.animations = {'idle': {'left': [], 'right': []},
                            'hurt': {'left': [], 'right': []},
+                           'jump': {'left': [], 'right': []},
                            }
 
         for i in range(1, 2):
@@ -37,6 +39,11 @@ class Slime(Enemy):
             image = pygame.image.load(f'assets/enemy/slime/idle/Char0{i}.png').convert_alpha()
             self.animations['idle']['right'].append(image)
             self.animations['idle']['left'].append(pygame.transform.flip(image, True, False))
+
+        for i in range(1, 14):
+            image = pygame.image.load(f'assets/enemy/slime/jump/Char0{i}.png').convert_alpha()
+            self.animations['jump']['right'].append(image)
+            self.animations['jump']['left'].append(pygame.transform.flip(image, True, False))
 
         self.current_frame = 0
         self.current_animation = self.animations['idle']
@@ -87,13 +94,32 @@ class Slime(Enemy):
             now = pygame.time.get_ticks()
             if now - self.attack_timer > self.attack_cooldown:
                 self.attack_timer = now
-                self.player.take_damage(self.damage)
+                # Откидывание игрока
+                if self.player.rect.x > self.rect.x:
+                    self.player.take_damage(self.damage, 10, 10)
+                else:
+                    self.player.take_damage(self.damage, 10, -10)
 
         self.set_animation()
         self.update_animation()
 
     def set_animation(self):
-        if self.stunned:
+        if self.is_jump:
+            # Если текущая анимация изменилась тогда кадр анимации 0
+            if self.current_animation != self.animations['jump']:
+                self.current_frame = 0
+            # Назначение текущей анимаций
+            self.current_animation = self.animations['jump']
+            # Получение картинки в соответсвии с направлением игрока
+            if self.player.right:
+                self.image = self.current_animation['left'][self.current_frame]
+            elif not self.player.right:
+                self.image = self.current_animation['right'][self.current_frame]
+            if self.current_frame == 12:
+                self.current_frame -= 1
+            if self.on_earth:
+                self.current_frame = 13
+        elif self.stunned:
             # Если текущая анимация изменилась тогда кадр анимации 0
             if self.current_animation != self.animations['hurt']:
                 self.current_frame = 0
@@ -147,4 +173,5 @@ class Slime(Enemy):
     def jump(self):
         super(Slime, self).jump()
         if len(self.platform_list) > 0 or self.rect.bottom >= self.SCREEN_HEIGHT:
+            self.is_jump = True
             self.change_y = random.randint(-22, -8)

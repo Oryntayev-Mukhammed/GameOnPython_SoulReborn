@@ -38,6 +38,7 @@ class Hud:
         # Рассчитываем пропорцию для изменения длины полоски жизни
         self.health_ratio = self.max_health / self.health_bar_lenght
         self.plasma_ratio = self.max_plasma / self.plasma_bar_lenght
+        self.money = 0
 
         self.screen = screen
 
@@ -61,7 +62,18 @@ class Hud:
         self.screen.blit(text, (30, 47))
         pygame.draw.rect(self.screen, (255, 255, 255), (10, 40, self.plasma_bar_lenght, 25), 4)
 
+    def money_count(self):
+        image = pygame.image.load('assets/hud/money/Char01.png')
+        icon = image.get_rect()
+        font = pygame.font.Font(None, 40)
+        text = font.render(str(self.money), True, (0, 0, 0))
+        icon.y = 10
+        icon.x = 730
+        self.screen.blit(text, (700, 30))
+        self.screen.blit(image, icon)
+
     def update_hud(self):
         self.update_health_bar()
         self.update_plasma_bar()
+        self.money_count()
         pygame.display.flip()
