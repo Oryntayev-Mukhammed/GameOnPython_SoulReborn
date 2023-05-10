@@ -1,5 +1,7 @@
 import pygame
 from Game.Level import Level
+from Game.child.Item import Item
+from Game.item.Coin_lil import Coin_lil
 from Game.objects.Ground import Ground
 from Game.objects.Underground import GroundUnder
 from Game.objects.Platform import Platform
@@ -34,3 +36,11 @@ class Level_03(Level):
         block2.rect.y = ground[1]
         block2.player = self.player
         self.platform_list.add(block2)
+
+        item1 = Coin_lil(310, 300, self.player, self.platform_list, 800, 500)
+        item2 = Coin_lil(340, 310, self.player, self.platform_list, 800, 500)
+        item3 = Coin_lil(360, 320, self.player, self.platform_list, 800, 500)
+        item4 = Coin_lil(320, 330, self.player, self.platform_list, 800, 500)
+        item5 = Coin_lil(330, 340, self.player, self.platform_list, 800, 500)
+        item6 = Coin_lil(350, 305, self.player, self.platform_list, 800, 500)
+        self.item_list.add(item1, item2, item3, item4, item5, item6)

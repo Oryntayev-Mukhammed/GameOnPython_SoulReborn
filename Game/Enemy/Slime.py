@@ -1,6 +1,9 @@
 import pygame
 import random
+
+from Game.Animation import Animation
 from Game.child.Enemy import Enemy
+from Game.functions.coin_drop import coin_drop
 
 
 class Slime(Enemy):
@@ -23,30 +26,10 @@ class Slime(Enemy):
         self.wait_time = random.randint(20, 500)
         self.start_time = 0
         self.is_jump = False
-
-        # Тут хранятся анимации
-        self.animations = {'idle': {'left': [], 'right': []},
-                           'hurt': {'left': [], 'right': []},
-                           'jump': {'left': [], 'right': []},
-                           }
-
-        for i in range(1, 2):
-            image = pygame.image.load(f'assets/enemy/slime/hurt/Char0{i}.png').convert_alpha()
-            self.animations['hurt']['left'].append(image)
-            self.animations['hurt']['right'].append(pygame.transform.flip(image, True, False))
-
-        for i in range(1, 2):
-            image = pygame.image.load(f'assets/enemy/slime/idle/Char0{i}.png').convert_alpha()
-            self.animations['idle']['right'].append(image)
-            self.animations['idle']['left'].append(pygame.transform.flip(image, True, False))
-
-        for i in range(1, 14):
-            image = pygame.image.load(f'assets/enemy/slime/jump/Char0{i}.png').convert_alpha()
-            self.animations['jump']['right'].append(image)
-            self.animations['jump']['left'].append(pygame.transform.flip(image, True, False))
-
-        self.current_frame = 0
-        self.current_animation = self.animations['idle']
+        self.anim = Animation(self.player, self)
+        self.anim.addAnim('idle', 'assets/enemy/slime/idle/Char0', 2)
+        self.anim.addAnim('hurt', 'assets/enemy/slime/hurt/Char0', 2)
+        self.anim.addAnim('jump', 'assets/enemy/slime/jump/Char0', 14)
 
     def update(self):
         # Проверка находится ли он на земле
@@ -105,63 +88,33 @@ class Slime(Enemy):
 
     def set_animation(self):
         if self.is_jump:
-            # Если текущая анимация изменилась тогда кадр анимации 0
-            if self.current_animation != self.animations['jump']:
-                self.current_frame = 0
-            # Назначение текущей анимаций
-            self.current_animation = self.animations['jump']
-            # Получение картинки в соответсвии с направлением игрока
-            if self.player.right:
-                self.image = self.current_animation['left'][self.current_frame]
-            elif not self.player.right:
-                self.image = self.current_animation['right'][self.current_frame]
-            if self.current_frame == 12:
-                self.current_frame -= 1
+            self.anim.set_animation('jump')
+            if self.anim.current_frame == 12:
+                self.anim.current_frame -= 1
             if self.on_earth:
-                self.current_frame = 13
+                self.anim.current_frame = 13
         elif self.stunned:
-            # Если текущая анимация изменилась тогда кадр анимации 0
-            if self.current_animation != self.animations['hurt']:
-                self.current_frame = 0
-            # Назначение текущей анимаций
-            self.current_animation = self.animations['hurt']
-            # Получение картинки в соответсвии с направлением игрока
-            if self.player.right:
-                self.image = self.current_animation['left'][self.current_frame]
-            elif not self.player.right:
-                self.image = self.current_animation['right'][self.current_frame]
+            self.anim.set_animation('hurt')
         else:
-            # Если текущая анимация изменилась тогда кадр анимации 0
-            if self.current_animation != self.animations['idle']:
-                self.current_frame = 0
-            # Назначение текущей анимаций
-            self.current_animation = self.animations['idle']
-            # Получение картинки в соответсвии с направлением слизня
-            if self.right:
-                self.image = self.current_animation['right'][self.current_frame]
-            else:
-                self.image = self.current_animation['left'][self.current_frame]
+            self.anim.set_animation('idle')
 
     def update_animation(self):
-        # Получение следующего кадра анимации
-        self.current_frame += 1
-        # Если кадра не существует начинаем заново
-        if self.current_frame >= len(self.current_animation['right']):
-            self.current_frame = 0
+        self.anim.update_animation()
         # Получение картинки в соответсвии с направлением удара игрока
-        if self.current_animation == self.animations['hurt']:
+        if self.anim.current_animation == self.anim.animations['hurt']:
             if self.player.right:
-                self.image = self.current_animation['right'][self.current_frame]
+                self.image = self.anim.current_animation['right'][self.anim.current_frame]
             elif not self.player.right:
-                self.image = self.current_animation['left'][self.current_frame]
+                self.image = self.anim.current_animation['left'][self.anim.current_frame]
         else:
-            if self.right:
-                self.image = self.current_animation['right'][self.current_frame]
+            if not self.right:
+                self.image = self.anim.current_animation['right'][self.anim.current_frame]
             else:
-                self.image = self.current_animation['left'][self.current_frame]
+                self.image = self.anim.current_animation['left'][self.anim.current_frame]
 
     def get_damage(self, damage):
         super(Slime, self).get_damage(damage)
+        self.is_jump = False
         # Откидывание от удара
         if self.player.right:
             self.change_x += 10
@@ -169,6 +122,8 @@ class Slime(Enemy):
             self.change_x -= 10
         self.change_y -= 7
 
+    def drop(self):
+        coin_drop(self.rect.x, self.rect.y, self.player, 'rand')
 
     def jump(self):
         super(Slime, self).jump()

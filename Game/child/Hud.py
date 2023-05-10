@@ -72,8 +72,13 @@ class Hud:
         self.screen.blit(text, (700, 30))
         self.screen.blit(image, icon)
 
+    def update_sword_cooldown(self):
+        image = pygame.image.load('assets/hud/sword_cool/Char01.png')
+        self.screen.blit(image, (13, 70))
+
     def update_hud(self):
         self.update_health_bar()
         self.update_plasma_bar()
         self.money_count()
+        self.update_sword_cooldown()
         pygame.display.flip()

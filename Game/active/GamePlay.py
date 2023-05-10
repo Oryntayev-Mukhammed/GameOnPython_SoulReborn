@@ -59,7 +59,7 @@ class GamePlay:
                 self.player.rect.left = 0
 
         if self.player.rect.bottom > 599:
-            self.player.take_damage(9)
+            self.player.take_damage(9, 0, 0)
             # Оглушение (передаваемое число не имеет смысла)
             self.player.stun(20)
             # Возвращение в начало

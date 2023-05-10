@@ -1,4 +1,5 @@
 import pygame
+from Game.Animation import Animation
 
 
 class Sword(pygame.sprite.Sprite):
@@ -15,24 +16,10 @@ class Sword(pygame.sprite.Sprite):
         self.start_time = 0
         self.attack_timer = 0
         self.attack_cooldown = 1500 # Задержка удара 1.5 сек
-
-        # Тут хранятся анимации
-        self.animations = {'idle': {'left': [], 'right': []},
-                           'attack': {'left': [], 'right': []},
-                           }
-
-        for i in range(1, 2):
-            image = pygame.image.load(f'assets/sword/idle/Char0{i}.png').convert_alpha()
-            self.animations['idle']['right'].append(image)
-            self.animations['idle']['left'].append(pygame.transform.flip(image, True, False))
-
-        for i in range(1, 11):
-            image = pygame.image.load(f'assets/sword/attack/Char0{i}.png').convert_alpha()
-            self.animations['attack']['right'].append(image)
-            self.animations['attack']['left'].append(pygame.transform.flip(image, True, False))
-
-        self.current_frame = 0
-        self.current_animation = self.animations['idle']
+        # Создаем анимацию
+        self.anim = Animation(self.player, self)
+        self.anim.addAnim('idle', 'assets/sword/idle/Char0', 2)
+        self.anim.addAnim('attack', 'assets/sword/attack/Char0', 11)
 
     def update(self):
         if self.player.right and self.is_attack:
@@ -73,38 +60,15 @@ class Sword(pygame.sprite.Sprite):
 
     def set_animation(self):
         if self.is_attack:
-            # Если текущая анимация изменилась тогда кадр анимации 0
-            if self.current_animation != self.animations['attack']:
-                self.current_frame = 0
-            # Назначение текущей анимаций
-            self.current_animation = self.animations['attack']
-            # Получение картинки в соответсвии с направлением игрока
-            if self.player.right:
-                self.image = self.current_animation['right'][self.current_frame]
-            else:
-                self.image = self.current_animation['left'][self.current_frame]
-            if self.current_frame == 9:
+            self.anim.set_animation('attack')
+            if self.anim.current_frame == 9:
                 self.is_attack = False
         else:
-            # Если текущая анимация изменилась тогда кадр анимации 0
-            if self.current_animation != self.animations['idle']:
-                self.current_frame = 0
-            # Назначение текущей анимаций
-            self.current_animation = self.animations['idle']
-            # Получение картинки в соответсвии с направлением игрока
-            if self.player.right:
-                self.image = self.current_animation['right'][self.current_frame]
-            else:
-                self.image = self.current_animation['left'][self.current_frame]
+            self.anim.set_animation('idle')
 
     def update_animation(self):
-        # Получение следующего кадра анимации
-        self.current_frame += 1
-        # Если кадра не существует начинаем заново
-        if self.current_frame >= len(self.current_animation['right']):
-            self.current_frame = 0
-        # Получение картинки в соответсвии с направлением игрока
-        if self.player.right:
-            self.image = self.current_animation['right'][self.current_frame]
+        self.anim.update_animation()
+        if not self.player.right:
+            self.anim.item.image = self.anim.current_animation['right'][self.anim.current_frame]
         else:
-            self.image = self.current_animation['left'][self.current_frame]
+            self.anim.item.image = self.anim.current_animation['left'][self.anim.current_frame]

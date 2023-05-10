@@ -79,7 +79,11 @@ class Enemy(pygame.sprite.Sprite):
     def get_damage(self, damage):
         self.current_health -= damage
         if self.current_health <= 0:
+            self.drop()
             self.kill()
+
+    def drop(self):
+        pass
 
     def calc_grav(self):
         # Здесь мы вычисляем как быстро объект будет

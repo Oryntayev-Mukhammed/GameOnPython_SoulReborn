@@ -1,6 +1,7 @@
 import pygame
-from Game.child.Hud import Hud
 
+from Game.Animation import Animation
+from Game.child.Hud import Hud
 
 # Класс, описывающий поведение главного игрока
 from assets.entity.Sword import Sword
@@ -29,9 +30,6 @@ class Player(pygame.sprite.Sprite):
         self.hud_list = pygame.sprite.Group()
         self.SCREEN_HEIGHT = SCREEN_HEIGHT
         self.screen = screen
-        self.hud = Hud(screen,
-                       self.max_health, self.current_health, self.health_bar_length,
-                       self.max_plasma, self.current_plasma, self.plasma_bar_length)
         self.stunned = False  # Флаг, указывающий на то, оглушен ли игрок
         self.stun_time = 0  # Время оглушения (в кадрах)
         self.fly_speed = 0.1
@@ -39,53 +37,13 @@ class Player(pygame.sprite.Sprite):
         self.sword = Sword(player=self, screen=self.screen)
         self.entity_sprite_list = pygame.sprite.Group(self.sword)
         self.start_time = 0
+        self.hud = Hud(screen,
+                       self.max_health, self.current_health, self.health_bar_length,
+                       self.max_plasma, self.current_plasma, self.plasma_bar_length)
 
         # Стандартный конструктор класса
         # Нужно ещё вызывать конструктор родительского класса
         super().__init__()
-
-        # Тут хранятся анимации
-        self.animations = {'idle': {'left': [], 'right': []},
-                           'moving_moment': {'left': [], 'right': []},
-                           'moving': {'left': [], 'right': []},
-                           'hurt': {'left': [], 'right': []},
-                           'fly': {'left': [], 'right': []},
-                           'jump': {'left': [], 'right': []}
-                           }
-        # Ложим в словарь картинки для анимации в папках
-        for i in range(1, 17):
-            image = pygame.image.load(f'assets/jump/Char0{i}.png').convert_alpha()
-            self.animations['jump']['right'].append(image)
-            self.animations['jump']['left'].append(pygame.transform.flip(image, True, False))
-
-        for i in range(1, 13):
-            image = pygame.image.load(f'assets/fly/Char0{i}.png').convert_alpha()
-            self.animations['fly']['right'].append(image)
-            self.animations['fly']['left'].append(pygame.transform.flip(image, True, False))
-
-        for i in range(1, 7):
-            image = pygame.image.load(f'assets/moving_moment/Char0{i}.png').convert_alpha()
-            self.animations['moving_moment']['right'].append(image)
-            self.animations['moving_moment']['left'].append(pygame.transform.flip(image, True, False))
-
-        for i in range(1, 19):
-            image = pygame.image.load(f'assets/moving/Char0{i}.png').convert_alpha()
-            self.animations['moving']['right'].append(image)
-            self.animations['moving']['left'].append(pygame.transform.flip(image, True, False))
-        # Ложим в словарь картинки для анимации в папках
-        for i in range(1, 33):
-            image = pygame.image.load(f'assets/idle/idle_{i}.png').convert_alpha()
-            self.animations['idle']['right'].append(image)
-            self.animations['idle']['left'].append(pygame.transform.flip(image, True, False))
-        # Ложим в словарь картинки для анимации в папках
-        for i in range(1, 13):
-            image = pygame.image.load(f'assets/get_hurt/hurt0{i}.png').convert_alpha()
-            self.animations['hurt']['right'].append(image)
-            self.animations['hurt']['left'].append(pygame.transform.flip(image, True, False))
-
-        self.current_frame = 0
-        # Стандартная анимация (заглушка)
-        self.current_animation = self.animations['idle']
 
         # Создаем изображение для игрока
         # Изображение находится в этой же папке проекта
@@ -99,97 +57,48 @@ class Player(pygame.sprite.Sprite):
         self.change_x = 0
         self.change_y = 0
 
+        self.anim = Animation(self, self)
+        self.anim.addAnim('idle', 'assets/idle/idle_', 33)
+        self.anim.addAnim('moving_moment', 'assets/moving_moment/Char0', 7)
+        self.anim.addAnim('moving', 'assets/moving/Char0', 19)
+        self.anim.addAnim('hurt', 'assets/get_hurt/hurt0', 13)
+        self.anim.addAnim('fly', 'assets/fly/Char0', 13)
+        self.anim.addAnim('jump', 'assets/jump/Char0', 17)
+
     def set_animation(self):
         if self.get_hurt:
-            # Если текущая анимация изменилась тогда кадр анимации 0
-            if self.current_animation != self.animations['hurt']:
-                self.current_frame = 0
-            # Назначение текущей анимаций
-            self.current_animation = self.animations['hurt']
-            # Получение картинки в соответсвии с направлением игрока
-            if self.right:
-                self.image = self.current_animation['right'][self.current_frame]
-            else:
-                self.image = self.current_animation['left'][self.current_frame]
-            if self.current_frame == 11:
+            self.anim.set_animation('hurt')
+            if self.anim.current_frame == 11:
                 self.get_hurt = False
         elif self.is_fly:
-            # Если текущая анимация изменилась тогда кадр анимации 0
-            if self.current_animation != self.animations['fly']:
-                self.current_frame = 0
-            # Назначение текущей анимаций
-            self.current_animation = self.animations['fly']
-            # Получение картинки в соответсвии с направлением игрока
-            if self.right:
-                self.image = self.current_animation['right'][self.current_frame]
-            else:
-                self.image = self.current_animation['left'][self.current_frame]
+            self.anim.set_animation('fly')
             self.moment_move = False
         elif self.moment_move and self.is_moving:
-            # Если текущая анимация изменилась тогда кадр анимации 0
-            if self.current_animation != self.animations['moving_moment']:
-                self.current_frame = 0
-            # Назначение текущей анимаций
-            self.current_animation = self.animations['moving_moment']
-            # Получение картинки в соответсвии с направлением игрока
-            if self.right:
-                self.image = self.current_animation['right'][self.current_frame]
-            else:
-                self.image = self.current_animation['left'][self.current_frame]
+            self.anim.set_animation('moving_moment')
             self.moment_move = False
         # Тут анимация не должно зациклиться поэтому перестаем увеличивать кадры
         elif self.jump_moment:
-            # Если текущая анимация изменилась тогда кадр анимации 0
-            if self.current_animation != self.animations['jump']:
-                self.current_frame = 0
-            if self.current_frame >= len(self.animations['jump']['right'])-1:
-                self.current_frame -= 1
-            # Назначение текущей анимаций
-            self.current_animation = self.animations['jump']
-            # Получение картинки в соответсвии с направлением игрока
-            if self.right:
-                self.image = self.current_animation['right'][self.current_frame]
-            else:
-                self.image = self.current_animation['left'][self.current_frame]
+            if self.anim.current_frame >= len(self.anim.animations['jump']['right']) - 1:
+                self.anim.current_frame -= 1
+            self.anim.set_animation('jump')
         elif self.is_moving:
-            # Если текущая анимация изменилась тогда кадр анимации 0
-            if self.current_animation != self.animations['moving']:
-                self.current_frame = 0
-            # Назначение текущей анимаций
-            self.current_animation = self.animations['moving']
-            # Получение картинки в соответсвии с направлением игрока
-            if self.right:
-                self.image = self.current_animation['right'][self.current_frame]
-            else:
-                self.image = self.current_animation['left'][self.current_frame]
+            self.anim.set_animation('moving')
         else:
-            # Если текущая анимация изменилась тогда кадр анимации 0
-            if self.current_animation != self.animations['idle']:
-                self.current_frame = 0
-            # Назначение текущей анимаций
-            self.current_animation = self.animations['idle']
-            # Получение картинки в соответсвии с направлением игрока
-            if self.right:
-                self.image = self.current_animation['right'][self.current_frame]
-            else:
-                self.image = self.current_animation['left'][self.current_frame]
+            self.anim.set_animation('idle')
 
     def update_animation(self):
-        # Получение следующего кадра анимации
-        self.current_frame += 1
-        # Если кадра не существует начинаем заново
-        if self.current_frame >= len(self.current_animation['right']):
-            self.current_frame = 0
+        self.anim.update_animation()
         # Получение картинки в соответсвии с направлением игрока
-        if self.right:
-            self.image = self.current_animation['right'][self.current_frame]
+        if not self.right:
+            self.image = self.anim.current_animation['right'][self.anim.current_frame]
         else:
-            self.image = self.current_animation['left'][self.current_frame]
+            self.image = self.anim.current_animation['left'][self.anim.current_frame]
 
     def stun(self, duration):
         # Оглушение игрока на указанное время
         self.stunned = True
         self.is_moving = False
+        self.is_fly = False
         self.stun_time = pygame.time.get_ticks()
         self.stop()
         # Анимация аглушения
@@ -240,7 +149,6 @@ class Player(pygame.sprite.Sprite):
             self.jump_moment = False
             # Останавливаем вертикальное движение
             self.change_y = 0
-
 
     def calc_grav(self):
         # Здесь мы вычисляем как быстро объект будет
