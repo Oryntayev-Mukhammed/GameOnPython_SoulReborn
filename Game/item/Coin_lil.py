@@ -11,7 +11,7 @@ class Coin_lil(Item):
         self.rect = self.image.get_rect()
         self.rect.x = x
         self.rect.y = y
-        self.anim.addAnim('idle', 'assets/entity_img/lil_coin/Char0', 8)
+        self.anim.addAnim('idle', 'assets/entity/lil_coin/Char0', 8)
         self.anim.set_animation('idle')
     
     def update(self):

@@ -11,7 +11,7 @@ class Coin_big(Item):
         self.rect = self.image.get_rect()
         self.rect.x = x
         self.rect.y = y
-        self.anim.addAnim('idle', 'assets/entity_img/big_coin/Char0', 16)
+        self.anim.addAnim('idle', 'assets/entity/big_coin/Char0', 16)
         self.anim.set_animation('idle')
 
     def update(self):
@@ -19,8 +19,7 @@ class Coin_big(Item):
         self.anim.update_animation()
 
         if 10 >= int(self.player.rect.x - self.rect.x) >= -50 \
-                and int(self.rect.bottom - self.player.rect.bottom) <= 10 and int(
-            self.rect.top - self.player.rect.top) >= 10:
+                and int(self.rect.bottom - self.player.rect.bottom) <= 10 and int(self.rect.top - self.player.rect.top) >= 10:
             self.pickup()
         super(Coin_big, self).update()
 

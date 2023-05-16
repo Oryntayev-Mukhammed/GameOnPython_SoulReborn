@@ -18,8 +18,8 @@ class Sword(pygame.sprite.Sprite):
         self.attack_cooldown = 1500 # Задержка удара 1.5 сек
         # Создаем анимацию
         self.anim = Animation(self.player, self)
-        self.anim.addAnim('idle', 'assets/sword/idle/Char0', 2)
-        self.anim.addAnim('attack', 'assets/sword/attack/Char0', 11)
+        self.anim.addAnim('idle', 'assets/entity/sword/idle/Char0', 2)
+        self.anim.addAnim('attack', 'assets/entity/sword/attack/Char0', 11)
 
     def update(self):
         if self.player.right and self.is_attack:

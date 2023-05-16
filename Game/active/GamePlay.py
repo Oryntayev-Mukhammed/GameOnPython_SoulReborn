@@ -1,8 +1,6 @@
 import pygame
 from pygame.locals import *
 
-from assets.entity.Sword import Sword
-
 
 class GamePlay:
     def __init__(self, active_sprite_list, level_list, current_level_no, player, screen, SCREEN_WIDTH):

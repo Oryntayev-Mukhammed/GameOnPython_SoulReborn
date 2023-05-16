@@ -4,7 +4,7 @@ from Game.Animation import Animation
 from Game.child.Hud import Hud
 
 # Класс, описывающий поведение главного игрока
-from assets.entity.Sword import Sword
+from Game.entity.Sword import Sword
 
 
 class Player(pygame.sprite.Sprite):
