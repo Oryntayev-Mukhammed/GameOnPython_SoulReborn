@@ -26,6 +26,17 @@ class Animation:
         else:
             self.item.image = self.current_animation['right'][self.current_frame]
 
+    def set_animation_by_side(self, name, right):
+        if self.current_animation != self.animations[name]:
+            self.current_frame = 0
+        # Назначение текущей анимаций
+        self.current_animation = self.animations[name]
+        # Получение картинки в соответсвии с направлением игрока
+        if right:
+            self.item.image = self.current_animation['left'][self.current_frame]
+        else:
+            self.item.image = self.current_animation['right'][self.current_frame]
+
     def update_animation(self):
         # Получение следующего кадра анимации
         self.current_frame += 1

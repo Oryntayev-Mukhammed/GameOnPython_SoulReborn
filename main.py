@@ -13,6 +13,9 @@ from Game.levels.Level_03 import Level_03
 from Game.levels.Level_04 import Level_04
 
 # Переменные для установки ширины и высоты окна
+from Game.levels.Level_05 import Level_05
+from Game.levels.Level_06 import Level_06
+
 SCREEN_WIDTH = 800
 SCREEN_HEIGHT = 600
 
@@ -27,7 +30,7 @@ def main():
     screen = pygame.display.set_mode(size)
 
     # Название игры
-    pygame.display.set_caption("Платформер")
+    pygame.display.set_caption("TheSoulReborn")
 
     # Создаем игрока
     player = Player(SCREEN_HEIGHT, screen)
@@ -37,13 +40,17 @@ def main():
     level_02 = Level_02(player)
     level_03 = Level_03(player)
     level_04 = Level_04(player)
+    level_05 = Level_05(player)
+    level_06 = Level_06(player)
 
     # Создаем все уровни
     level_list = [
         level_01,
         level_02,
         level_03,
-        level_04
+        level_04,
+        level_05,
+        level_06
     ]
 
     # Устанавливаем текущий уровень

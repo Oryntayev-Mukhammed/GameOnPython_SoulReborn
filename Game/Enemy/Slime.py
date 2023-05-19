@@ -28,8 +28,9 @@ class Slime(Enemy):
         self.is_jump = False
         self.anim = Animation(self.player, self)
         self.anim.addAnim('idle', 'assets/enemy/slime/idle/Char0', 2)
-        self.anim.addAnim('hurt', 'assets/enemy/slime/hurt/Char0', 2)
+        self.anim.addAnim('hurt', 'assets/enemy/slime/hurt/', 10)
         self.anim.addAnim('jump', 'assets/enemy/slime/jump/Char0', 14)
+        self.anim.addAnim('dead', 'assets/enemy/slime/dead/', 8)
 
     def update(self):
         # Проверка находится ли он на земле
@@ -38,6 +39,10 @@ class Slime(Enemy):
         elif self.change_y == 0:
             self.on_earth = True
             self.stunned = False
+        if self.is_dead:
+            self.set_animation()
+            self.update_animation()
+            return None
         # Сложная часть для высчитывания времени ожидания слизьня перед ударом
         if self.change_y != 0 and self.wait:
             self.wait = False
@@ -87,7 +92,11 @@ class Slime(Enemy):
         self.update_animation()
 
     def set_animation(self):
-        if self.is_jump:
+        if self.is_dead:
+            self.anim.set_animation('dead')
+            if self.anim.current_frame == 6:
+                self.kill()
+        elif self.is_jump:
             self.anim.set_animation('jump')
             if self.anim.current_frame == 12:
                 self.anim.current_frame -= 1
@@ -123,7 +132,7 @@ class Slime(Enemy):
         self.change_y -= 7
 
     def drop(self):
-        coin_drop(self.rect.x, self.rect.y, self.player, 'rand')
+        coin_drop(self.rect.x, self.rect.y, self.player, 5)
 
     def jump(self):
         super(Slime, self).jump()

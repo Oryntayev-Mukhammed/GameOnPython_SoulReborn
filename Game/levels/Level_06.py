@@ -18,7 +18,7 @@ backGround = pygame.image.load('assets/bg.jpg')
 
 # Класс, что описывает где будут находится все платформы
 # на определенном уровне игры
-class Level_03(Level):
+class Level_06(Level):
     def __init__(self, player):
         # Вызываем родительский конструктор
         Level.__init__(self, player, backGround)
@@ -39,29 +39,3 @@ class Level_03(Level):
         block2.rect.y = ground[1]
         block2.player = self.player
         self.platform_list.add(block2)
-
-        item1 = Coin_lil(310, 300, self.player, self.platform_list, 800, 500)
-        item2 = Coin_lil(340, 310, self.player, self.platform_list, 800, 500)
-        item3 = Coin_lil(360, 320, self.player, self.platform_list, 800, 500)
-        item4 = Coin_lil(320, 330, self.player, self.platform_list, 800, 500)
-        item5 = Coin_lil(330, 340, self.player, self.platform_list, 800, 500)
-        item6 = Coin_lil(350, 305, self.player, self.platform_list, 800, 500)
-        self.item_list.add(item1, item2, item3, item4, item5, item6)
-
-        apple1 = Apple(2, 300, 800, 500, 40, self.platform_list, self.player)
-        self.enemy_list.add(apple1)
-
-        block = Platform(200, 30)
-        block.rect.x = 550
-        block.rect.y = 450
-        self.platform_list.add(block)
-
-        block = Platform(200, 30)
-        block.rect.x = 550
-        block.rect.y = 260
-        self.platform_list.add(block)
-
-        apple_item = Apple_big(600, 220, self.player, self.platform_list, 800, 500)
-        self.item_list.add(apple_item)
-
-

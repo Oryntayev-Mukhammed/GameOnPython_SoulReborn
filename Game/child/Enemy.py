@@ -22,6 +22,7 @@ class Enemy(pygame.sprite.Sprite):
         self.on_earth = True
         self.wait = True
         self.right = True
+        self.is_dead = False
 
         # self.current_frame = 0
         # # Стандартная анимация (заглушка)
@@ -30,6 +31,7 @@ class Enemy(pygame.sprite.Sprite):
         # Задаем вектор скорости игрока
         self.change_x = 0
         self.change_y = 0
+
 
     def stun(self, duration):
         # Оглушение игрока на указанное время
@@ -57,9 +59,11 @@ class Enemy(pygame.sprite.Sprite):
             # устанавливает нашу правую сторону на левой стороне предмета, которого мы ударили
             if self.change_x > 0:
                 self.rect.right = block.rect.left
+                self.addition()
             elif self.change_x < 0:
                 # В противном случае, если мы движемся влево, то делаем наоборот
                 self.rect.left = block.rect.right
+                self.addition()
 
         # Передвигаемся вверх/вниз
         self.rect.y += self.change_y
@@ -76,11 +80,14 @@ class Enemy(pygame.sprite.Sprite):
             # Останавливаем вертикальное движение
             self.change_y = 0
 
+    def addition(self):
+        pass
+
     def get_damage(self, damage):
         self.current_health -= damage
         if self.current_health <= 0:
             self.drop()
-            self.kill()
+            self.is_dead = True
 
     def drop(self):
         pass

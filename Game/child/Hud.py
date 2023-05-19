@@ -69,7 +69,7 @@ class Hud:
         text = font.render(str(self.money), True, (0, 0, 0))
         icon.y = 10
         icon.x = 730
-        self.screen.blit(text, (700, 30))
+        self.screen.blit(text, (680, 30))
         self.screen.blit(image, icon)
 
     def update_sword_cooldown(self):
