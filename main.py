@@ -54,7 +54,7 @@ def main():
     ]
 
     # Устанавливаем текущий уровень
-    current_level_no = 3
+    current_level_no = 2
     current_level = level_list[current_level_no]
 
     active_sprite_list = pygame.sprite.Group()

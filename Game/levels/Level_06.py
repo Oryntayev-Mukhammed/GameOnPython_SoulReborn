@@ -1,6 +1,7 @@
 import pygame
 
 from Game.Enemy.Apple import Apple
+from Game.Enemy.Slime import Slime
 from Game.Level import Level
 from Game.child.Item import Item
 from Game.item.Coin_lil import Coin_lil
@@ -39,3 +40,6 @@ class Level_06(Level):
         block2.rect.y = ground[1]
         block2.player = self.player
         self.platform_list.add(block2)
+
+        slime1 = Apple(700, 300, 800, 500, 40, self.platform_list, self.player)
+        self.enemy_list.add(slime1)
